@@ -1,6 +1,6 @@
 <div class="card">
     <h2>Alta de compañía de seguros</h2>
-    <form method="post" action="/insurers/store">
+    <form method="post" action="<?= htmlspecialchars($basePath) ?>/insurers/store">
         <input name="name" placeholder="Nombre" required>
         <input type="email" name="contact_email" placeholder="Email de contacto">
         <input name="contact_phone" placeholder="Teléfono de contacto">

@@ -21,14 +21,14 @@ class Policy extends BaseModel
         );
 
         return $stmt->execute([
-            $data['policy_number'],
-            $data['client_id'],
-            $data['insurer_id'],
-            $data['coverage_type'],
-            $data['start_date'],
-            $data['end_date'],
-            $data['premium'],
-            $data['status'],
+            trim((string) ($data['policy_number'] ?? '')),
+            (int) ($data['client_id'] ?? 0),
+            (int) ($data['insurer_id'] ?? 0),
+            trim((string) ($data['coverage_type'] ?? '')),
+            $data['start_date'] ?? null,
+            $data['end_date'] ?? null,
+            $data['premium'] ?? 0,
+            $data['status'] ?? 'vigente',
         ]);
     }
 

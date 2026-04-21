@@ -1,6 +1,6 @@
 <div class="card">
     <h2><?= $editClient ? 'Modificar cliente' : 'Alta de cliente' ?></h2>
-    <form method="post" action="<?= $editClient ? '/clients/update' : '/clients/store' ?>">
+    <form method="post" action="<?= htmlspecialchars($basePath) ?><?= $editClient ? '/clients/update' : '/clients/store' ?>">
         <?php if ($editClient): ?><input type="hidden" name="id" value="<?= $editClient['id'] ?>"><?php endif; ?>
         <input name="full_name" placeholder="Nombre completo" required value="<?= htmlspecialchars($editClient['full_name'] ?? '') ?>">
         <input name="document" placeholder="Documento" required value="<?= htmlspecialchars($editClient['document'] ?? '') ?>">
@@ -27,8 +27,8 @@
                 <td><?= htmlspecialchars($c['document']) ?></td>
                 <td><?= htmlspecialchars($c['status']) ?></td>
                 <td class="actions">
-                    <a href="/clients?edit=<?= $c['id'] ?>">Editar</a>
-                    <form class="inline" method="post" action="/clients/delete" onsubmit="return confirm('¿Eliminar cliente?');">
+                    <a href="<?= htmlspecialchars($basePath) ?>/clients?edit=<?= $c['id'] ?>">Editar</a>
+                    <form class="inline" method="post" action="<?= htmlspecialchars($basePath) ?>/clients/delete" onsubmit="return confirm('¿Eliminar cliente?');">
                         <input type="hidden" name="id" value="<?= $c['id'] ?>">
                         <button class="danger" type="submit">Baja</button>
                     </form>

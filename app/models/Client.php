@@ -12,11 +12,11 @@ class Client extends BaseModel
     {
         $stmt = $this->db->prepare('INSERT INTO clients (full_name, document, phone, email, address, status) VALUES (?, ?, ?, ?, ?, ?)');
         return $stmt->execute([
-            $data['full_name'],
-            $data['document'],
-            $data['phone'],
-            $data['email'],
-            $data['address'],
+            trim((string) ($data['full_name'] ?? '')),
+            trim((string) ($data['document'] ?? '')),
+            $data['phone'] ?? null,
+            $data['email'] ?? null,
+            $data['address'] ?? null,
             $data['status'] ?? 'activo',
         ]);
     }
@@ -25,12 +25,12 @@ class Client extends BaseModel
     {
         $stmt = $this->db->prepare('UPDATE clients SET full_name = ?, document = ?, phone = ?, email = ?, address = ?, status = ? WHERE id = ?');
         return $stmt->execute([
-            $data['full_name'],
-            $data['document'],
-            $data['phone'],
-            $data['email'],
-            $data['address'],
-            $data['status'],
+            trim((string) ($data['full_name'] ?? '')),
+            trim((string) ($data['document'] ?? '')),
+            $data['phone'] ?? null,
+            $data['email'] ?? null,
+            $data['address'] ?? null,
+            $data['status'] ?? 'activo',
             $id,
         ]);
     }

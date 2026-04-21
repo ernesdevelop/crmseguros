@@ -11,6 +11,10 @@ class Insurer extends BaseModel
     public function create(array $data): bool
     {
         $stmt = $this->db->prepare('INSERT INTO insurers (name, contact_email, contact_phone) VALUES (?, ?, ?)');
-        return $stmt->execute([$data['name'], $data['contact_email'], $data['contact_phone']]);
+        return $stmt->execute([
+            trim((string) ($data['name'] ?? '')),
+            $data['contact_email'] ?? null,
+            $data['contact_phone'] ?? null,
+        ]);
     }
 }

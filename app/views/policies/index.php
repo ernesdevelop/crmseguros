@@ -1,6 +1,6 @@
 <div class="card">
     <h2>Alta de póliza</h2>
-    <form method="post" action="/policies/store">
+    <form method="post" action="<?= htmlspecialchars($basePath) ?>/policies/store">
         <input name="policy_number" placeholder="Número de póliza" required>
         <select name="client_id" required>
             <option value="">Cliente</option>
