@@ -1,6 +1,6 @@
 <div class="card">
     <h2>Vencimientos próximos</h2>
-    <form method="get" action="/renewals">
+    <form method="get" action="<?= htmlspecialchars($basePath) ?>/renewals">
         <label>Mostrar vencimientos en los próximos días:</label>
         <input type="number" min="1" max="365" name="days" value="<?= $days ?>">
         <button type="submit">Filtrar</button>

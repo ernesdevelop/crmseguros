@@ -23,6 +23,13 @@ class PolicyController extends Controller
 
     public function store(): void
     {
+        $startDate = $_POST['start_date'] ?? null;
+        $endDate = $_POST['end_date'] ?? null;
+
+        if ($startDate && $endDate && $endDate < $startDate) {
+            $this->redirect('/policies');
+        }
+
         (new Policy($this->config))->create($_POST);
         $this->redirect('/policies');
     }

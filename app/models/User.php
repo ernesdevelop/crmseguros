@@ -11,6 +11,10 @@ class User extends BaseModel
     public function create(array $data): bool
     {
         $stmt = $this->db->prepare('INSERT INTO users (name, email, role) VALUES (?, ?, ?)');
-        return $stmt->execute([$data['name'], $data['email'], $data['role']]);
+        return $stmt->execute([
+            trim((string) ($data['name'] ?? '')),
+            trim((string) ($data['email'] ?? '')),
+            $data['role'] ?? 'operador',
+        ]);
     }
 }

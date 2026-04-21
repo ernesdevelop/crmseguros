@@ -1,6 +1,6 @@
 <div class="card">
     <h2>Alta de usuario</h2>
-    <form method="post" action="/users/store">
+    <form method="post" action="<?= htmlspecialchars($basePath) ?>/users/store">
         <input name="name" placeholder="Nombre" required>
         <input type="email" name="email" placeholder="Email" required>
         <select name="role">

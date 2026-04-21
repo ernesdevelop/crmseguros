@@ -14,6 +14,7 @@ class Controller
     {
         extract($data);
         $appName = $this->config['app_name'] ?? 'CRM';
+        $basePath = rtrim((string) parse_url($this->config['base_url'] ?? '', PHP_URL_PATH), '/');
         require __DIR__ . '/../views/layouts/header.php';
         require __DIR__ . '/../views/' . $view . '.php';
         require __DIR__ . '/../views/layouts/footer.php';
@@ -21,7 +22,7 @@ class Controller
 
     protected function redirect(string $path): void
     {
-        header('Location: ' . $this->config['base_url'] . $path);
+        header('Location: ' . rtrim($this->config['base_url'], '/') . $path);
         exit;
     }
 }
