@@ -8,14 +8,16 @@
 </head>
 <body>
 <header>
-    <h1><?= htmlspecialchars($appName) ?></h1>
-    <nav>
-        <a href="/">Dashboard</a>
-        <a href="/users">Usuarios</a>
-        <a href="/clients">Clientes</a>
-        <a href="/insurers">Compañías</a>
-        <a href="/policies">Pólizas</a>
-        <a href="/renewals">Vencimientos</a>
-    </nav>
+    <div class="topbar">
+        <h1 class="brand"><?= htmlspecialchars($appName) ?></h1>
+        <nav>
+            <a href="/">Dashboard</a>
+            <a href="/users">Usuarios</a>
+            <a href="/clients">Clientes</a>
+            <a href="/insurers">Compañías</a>
+            <a href="/policies">Pólizas</a>
+            <a href="/renewals">Vencimientos</a>
+        </nav>
+    </div>
 </header>
 <main>
