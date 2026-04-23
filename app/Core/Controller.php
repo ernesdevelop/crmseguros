@@ -14,10 +14,11 @@ class Controller
     {
         extract($data);
         $appName = $this->config['app_name'] ?? 'CRM';
-        $basePath = rtrim((string) parse_url($this->config['base_url'] ?? '', PHP_URL_PATH), '/');
-        require __DIR__ . '/../views/layouts/header.php';
-        require __DIR__ . '/../views/' . $view . '.php';
-        require __DIR__ . '/../views/layouts/footer.php';
+        $basePath = '/crmseguros/public'; 
+
+        require __DIR__ . '/../Views/' . $view . '.php';
+        require __DIR__ . '/../Views/layouts/header.php';
+        require __DIR__ . '/../Views/layouts/footer.php';
     }
 
     protected function redirect(string $path): void

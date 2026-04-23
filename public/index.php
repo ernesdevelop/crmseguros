@@ -1,42 +1,32 @@
 <?php
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
 
-spl_autoload_register(function ($class) {
-    $prefix = 'App\\';
-    $baseDir = __DIR__ . '/../app/';
-
-    $len = strlen($prefix);
-    if (strncmp($prefix, $class, $len) !== 0) {
-        return;
-    }
-
-    $relativeClass = substr($class, $len);
-    $file = $baseDir . str_replace('\\', '/', $relativeClass) . '.php';
-
-    if (file_exists($file)) {
-        require $file;
-    }
-});
+// 1. Autoload
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require __DIR__ . '/../vendor/autoload.php';
+} else {
+    require_once __DIR__ . '/../app/Core/Router.php';
+    // Importante: si no usas Composer, tendrías que cargar cada controlador manualmente aquí
+}
 
 $config = require __DIR__ . '/../config/config.php';
 
-$router = new App\Core\Router();
+try {
+    $router = new \App\Core\Router();
 
-$router->add('GET', '/', [App\Controllers\DashboardController::class, 'index']);
+   $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+$base = '/crmseguros/public';
 
-$router->add('GET', '/users', [App\Controllers\UserController::class, 'index']);
-$router->add('POST', '/users/store', [App\Controllers\UserController::class, 'store']);
+if (strpos($uri, $base) === 0) {
+    $uri = substr($uri, strlen($base));
+}
 
-$router->add('GET', '/clients', [App\Controllers\ClientController::class, 'index']);
-$router->add('POST', '/clients/store', [App\Controllers\ClientController::class, 'store']);
-$router->add('POST', '/clients/update', [App\Controllers\ClientController::class, 'update']);
-$router->add('POST', '/clients/delete', [App\Controllers\ClientController::class, 'delete']);
+// Aseguramos que la ruta sea limpia para el Router
+$uri = '/' . trim($uri, '/');
 
-$router->add('GET', '/insurers', [App\Controllers\InsurerController::class, 'index']);
-$router->add('POST', '/insurers/store', [App\Controllers\InsurerController::class, 'store']);
+$router->dispatch($_SERVER['REQUEST_METHOD'], $uri, $config);
 
-$router->add('GET', '/policies', [App\Controllers\PolicyController::class, 'index']);
-$router->add('POST', '/policies/store', [App\Controllers\PolicyController::class, 'store']);
-
-$router->add('GET', '/renewals', [App\Controllers\RenewalController::class, 'index']);
-
-$router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI'], $config);
+} catch (\Throwable $e) {
+    echo "Error fatal: " . $e->getMessage();
+}

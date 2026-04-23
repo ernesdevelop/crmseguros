@@ -1,13 +1,13 @@
 <?php
 return [
     'app_name' => 'CRM Seguros',
-    'base_url' => 'http://localhost:8000',
+    'basePath' => '/crmseguros/public',
     'db' => [
-        'host' => '127.0.0.1',
+        'host' => 'localhost',
         'port' => '3306',
         'dbname' => 'crm_seguros',
-        'user' => 'root',
-        'pass' => '',
+        'user' => 'segurai',
+        'pass' => 'En26#0p9c',
         'charset' => 'utf8mb4',
     ],
 ];

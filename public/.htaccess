@@ -1,0 +1,10 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # Si el archivo o carpeta existe, úsalo directamente
+    RewriteBase /crmseguros/public/
+
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    # Si no existe, envía todo al index.php
+    RewriteRule ^ index.php [L]
+</IfModule>
