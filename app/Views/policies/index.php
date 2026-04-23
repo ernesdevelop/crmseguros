@@ -1,6 +1,7 @@
 <div class="card">
     <h2>Alta de póliza</h2>
     <form method="post" action="<?= htmlspecialchars($basePath) ?>/policies/store">
+        <input type="hidden" name="_csrf" value="<?= htmlspecialchars($csrfToken) ?>">
         <input name="policy_number" placeholder="Número de póliza" required>
         <select name="client_id" required>
             <option value="">Cliente</option>
@@ -23,7 +24,12 @@
             <option value="vencida">Vencida</option>
             <option value="cancelada">Cancelada</option>
         </select>
-        <button type="submit">Guardar</button>
+        <button class="btn-icon" type="submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M4 4h16v16H4z"></path><path d="M8 4v6h8V4"></path><path d="M8 16h8"></path>
+            </svg>
+            <span class="btn-label">Guardar</span>
+        </button>
     </form>
 </div>
 

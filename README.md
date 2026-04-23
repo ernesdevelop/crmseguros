@@ -56,6 +56,19 @@ Sistema CRM básico para brokers de seguros desarrollado en **PHP + MySQL + CSS*
 - Las acciones de alta/edición/baja muestran feedback visual global (`success`, `error`, `info`).
 - Se validan datos clave antes de escribir en base de datos (campos obligatorios, email, rangos y estados permitidos).
 
+## Protección CSRF
+- Todos los formularios `POST` incluyen token CSRF (`_csrf`).
+- El front controller valida el token antes de ejecutar la acción.
+- Si el token falta o es inválido, la operación se rechaza y se muestra un mensaje.
+
+## Login y permisos
+- Login: `/login`
+- Logout: botón **Salir** en la barra superior.
+- El módulo `/admin/tools` ahora requiere sesión iniciada con rol `admin`.
+- La gestión de usuarios `/users` también requiere sesión admin.
+- El link **Admin** solo se muestra cuando el usuario autenticado tiene rol `admin`.
+- Al crear usuarios desde `/users`, ahora se solicita contraseña.
+
 ## Manejo de errores
 - Página amigable `404` para rutas no existentes.
 - Página amigable `500` para errores internos de la aplicación.
@@ -71,3 +84,15 @@ Sistema CRM básico para brokers de seguros desarrollado en **PHP + MySQL + CSS*
    ```
 3. Variables opcionales para sobreescribir credenciales:
    - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`
+
+### Backup desde UI
+- Ir a `/admin/tools`.
+- Botón: **Descargar backup (.sql.gz)**.
+- En ese mismo panel se ejecuta y muestra el `healthcheck` (estado + detalle por check).
+
+## Migración necesaria (si la base ya existía)
+Si tu tabla `users` fue creada antes de agregar contraseñas, ejecutá:
+
+```bash
+mysql -u TU_USUARIO -p TU_BASE < database/migrations/2026-04-23_add_users_password_hash.sql
+```

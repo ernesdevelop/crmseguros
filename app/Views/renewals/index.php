@@ -3,7 +3,12 @@
     <form method="get" action="<?= htmlspecialchars($basePath) ?>/renewals">
         <label>Mostrar vencimientos en los próximos días:</label>
         <input type="number" min="1" max="365" name="days" value="<?= $days ?>">
-        <button type="submit">Filtrar</button>
+        <button class="btn-icon" type="submit">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M3 5h18l-7 8v5l-4 2v-7z"></path>
+            </svg>
+            <span class="btn-label">Filtrar</span>
+        </button>
     </form>
 </div>
 

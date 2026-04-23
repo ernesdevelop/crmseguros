@@ -1,128 +1,20 @@
 <?php
 declare(strict_types=1);
 
-$startedAt = microtime(true);
-$checks = [];
-$allOk = true;
-
-$checks['php_version'] = [
-    'ok' => version_compare(PHP_VERSION, '8.1.0', '>='),
-    'current' => PHP_VERSION,
-    'required' => '>=8.1.0',
-];
-if (!$checks['php_version']['ok']) {
-    $allOk = false;
-}
-
-$criticalFiles = [
-    __DIR__ . '/index.php',
-    __DIR__ . '/../config/config.php',
-    __DIR__ . '/../app/Core/Router.php',
-    __DIR__ . '/../app/Core/Controller.php',
-    __DIR__ . '/../app/Core/Database.php',
-];
-
-$missingFiles = [];
-foreach ($criticalFiles as $file) {
-    if (!file_exists($file)) {
-        $missingFiles[] = $file;
-    }
-}
-
-$checks['critical_files'] = [
-    'ok' => count($missingFiles) === 0,
-    'missing' => $missingFiles,
-];
-if (!$checks['critical_files']['ok']) {
-    $allOk = false;
+if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
+    require __DIR__ . '/../vendor/autoload.php';
+} else {
+    require_once __DIR__ . '/../app/Core/Healthcheck.php';
 }
 
 $configPath = __DIR__ . '/../config/config.php';
-$config = [];
-if (file_exists($configPath)) {
-    $loaded = require $configPath;
-    if (is_array($loaded)) {
-        $config = $loaded;
-    }
+$config = file_exists($configPath) ? (require $configPath) : [];
+if (!is_array($config)) {
+    $config = [];
 }
 
-$dbConfig = $config['db'] ?? [];
-$requiredDbKeys = ['host', 'port', 'dbname', 'user', 'pass', 'charset'];
-$missingDbKeys = [];
-foreach ($requiredDbKeys as $key) {
-    if (!array_key_exists($key, $dbConfig)) {
-        $missingDbKeys[] = $key;
-    }
-}
-
-$checks['db_config'] = [
-    'ok' => count($missingDbKeys) === 0,
-    'missing_keys' => $missingDbKeys,
-    'database' => $dbConfig['dbname'] ?? null,
-];
-if (!$checks['db_config']['ok']) {
-    $allOk = false;
-}
-
-if ($checks['db_config']['ok']) {
-    try {
-        $dsn = sprintf(
-            'mysql:host=%s;port=%s;dbname=%s;charset=%s',
-            $dbConfig['host'],
-            $dbConfig['port'],
-            $dbConfig['dbname'],
-            $dbConfig['charset']
-        );
-
-        $pdo = new PDO($dsn, (string) $dbConfig['user'], (string) $dbConfig['pass'], [
-            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        ]);
-
-        $checks['db_connection'] = ['ok' => true];
-
-        $requiredTables = ['users', 'clients', 'insurers', 'policies'];
-        $stmt = $pdo->prepare(
-            'SELECT table_name
-             FROM information_schema.tables
-             WHERE table_schema = :schema AND table_name IN ("users","clients","insurers","policies")'
-        );
-        $stmt->execute(['schema' => (string) $dbConfig['dbname']]);
-        $existingTables = array_map(
-            static function (array $row): string {
-                return (string) ($row['table_name'] ?? $row['TABLE_NAME'] ?? '');
-            },
-            $stmt->fetchAll()
-        );
-        $existingTables = array_values(array_filter($existingTables, static fn(string $name): bool => $name !== ''));
-
-        $missingTables = array_values(array_diff($requiredTables, $existingTables));
-        $checks['db_tables'] = [
-            'ok' => count($missingTables) === 0,
-            'missing' => $missingTables,
-        ];
-
-        if (!$checks['db_tables']['ok']) {
-            $allOk = false;
-        }
-    } catch (Throwable $e) {
-        $checks['db_connection'] = [
-            'ok' => false,
-            'error' => $e->getMessage(),
-        ];
-        $allOk = false;
-    }
-}
-
-$elapsedMs = (int) round((microtime(true) - $startedAt) * 1000);
-$response = [
-    'status' => $allOk ? 'ok' : 'error',
-    'timestamp' => date('c'),
-    'duration_ms' => $elapsedMs,
-    'checks' => $checks,
-];
-
-http_response_code($allOk ? 200 : 503);
+$response = \App\Core\Healthcheck::run($config);
+http_response_code(($response['status'] ?? 'error') === 'ok' ? 200 : 503);
 
 $format = strtolower((string) ($_GET['format'] ?? ''));
 $accept = strtolower((string) ($_SERVER['HTTP_ACCEPT'] ?? ''));

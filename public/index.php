@@ -38,6 +38,37 @@ function resolveBasePath(array $config): string
     return '';
 }
 
+function isAuthenticated(): bool
+{
+    if (!isset($_SESSION['auth_user']) || !is_array($_SESSION['auth_user'])) {
+        return false;
+    }
+
+    return isset($_SESSION['auth_user']['id'], $_SESSION['auth_user']['role']);
+}
+
+function redirectTo(array $config, string $path): void
+{
+    $basePath = resolveBasePath($config);
+    $targetPath = '/' . ltrim($path, '/');
+    header('Location: ' . rtrim($basePath, '/') . $targetPath);
+    exit;
+}
+
+function isValidCsrfToken(?string $providedToken): bool
+{
+    $sessionToken = $_SESSION['csrf_token'] ?? null;
+    if (!is_string($sessionToken) || $sessionToken === '') {
+        return false;
+    }
+
+    if (!is_string($providedToken) || $providedToken === '') {
+        return false;
+    }
+
+    return hash_equals($sessionToken, $providedToken);
+}
+
 function renderServerErrorPage(array $config, \Throwable $e): void
 {
     http_response_code(500);
@@ -61,6 +92,9 @@ try {
     $router = new \App\Core\Router();
 
     $router->add('GET', '/', [\App\Controllers\DashboardController::class, 'index']);
+    $router->add('GET', '/login', [\App\Controllers\AuthController::class, 'showLogin']);
+    $router->add('POST', '/login', [\App\Controllers\AuthController::class, 'login']);
+    $router->add('POST', '/logout', [\App\Controllers\AuthController::class, 'logout']);
 
     $router->add('GET', '/users', [\App\Controllers\UserController::class, 'index']);
     $router->add('POST', '/users/store', [\App\Controllers\UserController::class, 'store']);
@@ -78,6 +112,9 @@ try {
 
     $router->add('GET', '/renewals', [\App\Controllers\RenewalController::class, 'index']);
 
+    $router->add('GET', '/admin/tools', [\App\Controllers\AdminController::class, 'tools']);
+    $router->add('POST', '/admin/backup/download', [\App\Controllers\AdminController::class, 'downloadBackup']);
+
     $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
     $base = '';
     if (!empty($config['basePath'])) {
@@ -94,6 +131,33 @@ try {
     $uri = '/' . trim($uri, '/');
     if ($uri === '//') {
         $uri = '/';
+    }
+
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $providedCsrf = $_POST['_csrf'] ?? null;
+        if (!isValidCsrfToken(is_string($providedCsrf) ? $providedCsrf : null)) {
+            $_SESSION['flash'] = [
+                'type' => 'error',
+                'message' => 'Token de seguridad inválido. Intentá nuevamente.',
+            ];
+            redirectTo($config, isAuthenticated() ? '/' : '/login');
+        }
+    }
+
+    $isAuth = isAuthenticated();
+    $publicRoutes = ['/login'];
+    $isPublicRoute = in_array($uri, $publicRoutes, true);
+
+    if (!$isAuth && !$isPublicRoute) {
+        $_SESSION['flash'] = [
+            'type' => 'error',
+            'message' => 'Debés iniciar sesión para acceder al sistema.',
+        ];
+        redirectTo($config, '/login');
+    }
+
+    if ($isAuth && $uri === '/login' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+        redirectTo($config, '/');
     }
 
     $router->dispatch($_SERVER['REQUEST_METHOD'], $uri, $config);

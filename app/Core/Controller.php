@@ -16,6 +16,8 @@ class Controller
         $appName = $this->config['app_name'] ?? 'CRM';
         $basePath = $this->resolveBasePath();
         $flash = $this->consumeFlash();
+        $authUser = $this->currentUser();
+        $csrfToken = $this->csrfToken();
 
         require __DIR__ . '/../Views/layouts/header.php';
         require __DIR__ . '/../Views/' . $view . '.php';
@@ -57,6 +59,77 @@ class Controller
         unset($_SESSION['flash']);
 
         return $flash;
+    }
+
+    protected function currentUser(): ?array
+    {
+        if (!$this->ensureSessionStarted()) {
+            return null;
+        }
+
+        $user = $_SESSION['auth_user'] ?? null;
+        if (!is_array($user)) {
+            return null;
+        }
+
+        if (!isset($user['id'], $user['name'], $user['email'], $user['role'])) {
+            return null;
+        }
+
+        return [
+            'id' => (int) $user['id'],
+            'name' => (string) $user['name'],
+            'email' => (string) $user['email'],
+            'role' => (string) $user['role'],
+        ];
+    }
+
+    protected function loginUser(array $user): void
+    {
+        if (!$this->ensureSessionStarted()) {
+            return;
+        }
+
+        $_SESSION['auth_user'] = [
+            'id' => (int) ($user['id'] ?? 0),
+            'name' => (string) ($user['name'] ?? ''),
+            'email' => (string) ($user['email'] ?? ''),
+            'role' => (string) ($user['role'] ?? 'operador'),
+        ];
+    }
+
+    protected function logoutUser(): void
+    {
+        if (!$this->ensureSessionStarted()) {
+            return;
+        }
+
+        unset($_SESSION['auth_user']);
+    }
+
+    protected function requireAdmin(): void
+    {
+        $user = $this->currentUser();
+        if ($user === null) {
+            $this->redirectWithMessage('/login', 'error', 'Iniciá sesión para acceder al módulo admin.');
+        }
+
+        if (($user['role'] ?? '') !== 'admin') {
+            $this->redirectWithMessage('/', 'error', 'No tenés permisos para acceder al módulo admin.');
+        }
+    }
+
+    protected function csrfToken(): string
+    {
+        if (!$this->ensureSessionStarted()) {
+            return '';
+        }
+
+        if (empty($_SESSION['csrf_token']) || !is_string($_SESSION['csrf_token'])) {
+            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+        }
+
+        return $_SESSION['csrf_token'];
     }
 
     private function ensureSessionStarted(): bool
