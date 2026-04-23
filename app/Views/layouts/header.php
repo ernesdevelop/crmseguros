@@ -21,3 +21,8 @@
     </div>
 </header>
 <main>
+<?php if (!empty($flash) && is_array($flash)): ?>
+    <div class="flash flash-<?= htmlspecialchars((string) ($flash['type'] ?? 'info')) ?>">
+        <?= htmlspecialchars((string) ($flash['message'] ?? '')) ?>
+    </div>
+<?php endif; ?>

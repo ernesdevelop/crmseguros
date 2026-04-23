@@ -70,6 +70,32 @@ main {
   margin: 0 auto;
 }
 
+.flash {
+  margin: 0 0 1rem;
+  padding: .75rem .9rem;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-weight: 600;
+}
+
+.flash-success {
+  background: #eaf8ef;
+  color: #196a37;
+  border-color: #b9e4c8;
+}
+
+.flash-error {
+  background: #fdeceb;
+  color: #8a2320;
+  border-color: #f6c1be;
+}
+
+.flash-info {
+  background: #eaf2ff;
+  color: #1c4fa8;
+  border-color: #c6d9ff;
+}
+
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -176,6 +202,44 @@ th {
 }
 
 .inline { display: inline; }
+
+.error-page-wrap {
+  min-height: 75vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.error-page-card {
+  width: min(620px, 95%);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.error-code {
+  margin: 0;
+  font-size: 3rem;
+  font-weight: 800;
+  color: #c53333;
+}
+
+.error-detail {
+  color: var(--text-soft);
+  font-size: .95rem;
+  word-break: break-word;
+}
+
+.error-link {
+  display: inline-block;
+  margin-top: .75rem;
+  text-decoration: none;
+  font-weight: 700;
+  color: var(--brand-dark);
+}
 
 @media (max-width: 640px) {
   .topbar { padding: .85rem .9rem; }

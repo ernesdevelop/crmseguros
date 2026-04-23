@@ -3,6 +3,7 @@ namespace App\Core;
 
 use PDO;
 use PDOException;
+use RuntimeException;
 
 class Database
 {
@@ -25,7 +26,7 @@ class Database
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 ]);
             } catch (PDOException $e) {
-                die('Error de conexión a base de datos: ' . $e->getMessage());
+                throw new RuntimeException('No se pudo conectar a la base de datos.', 0, $e);
             }
         }
 

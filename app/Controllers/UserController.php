@@ -14,8 +14,23 @@ class UserController extends Controller
 
     public function store(): void
     {
-        $model = new User($this->config);
-        $model->create($_POST);
-        $this->redirect('/users');
+        $name = trim((string) ($_POST['name'] ?? ''));
+        $email = trim((string) ($_POST['email'] ?? ''));
+        $role = (string) ($_POST['role'] ?? '');
+
+        if ($name === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $this->redirectWithMessage('/users', 'error', 'Nombre y email válido son obligatorios.');
+        }
+
+        if (!in_array($role, ['admin', 'operador'], true)) {
+            $this->redirectWithMessage('/users', 'error', 'Rol de usuario inválido.');
+        }
+
+        try {
+            (new User($this->config))->create($_POST);
+            $this->redirectWithMessage('/users', 'success', 'Usuario creado correctamente.');
+        } catch (\Throwable $e) {
+            $this->redirectWithMessage('/users', 'error', 'No se pudo crear el usuario. Verificá que el email no esté duplicado.');
+        }
     }
 }

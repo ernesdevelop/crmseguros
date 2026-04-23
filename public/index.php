@@ -2,6 +2,16 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
+if (session_status() !== PHP_SESSION_ACTIVE && !headers_sent()) {
+    if (PHP_SAPI === 'cli') {
+        $tmpDir = sys_get_temp_dir();
+        if (is_dir($tmpDir) && is_writable($tmpDir)) {
+            @ini_set('session.save_path', $tmpDir);
+        }
+    }
+    @session_start();
+}
+
 // 1. Autoload
 if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
     require __DIR__ . '/../vendor/autoload.php';
@@ -11,6 +21,41 @@ if (file_exists(__DIR__ . '/../vendor/autoload.php')) {
 }
 
 $config = require __DIR__ . '/../config/config.php';
+
+function resolveBasePath(array $config): string
+{
+    if (!empty($config['basePath'])) {
+        return '/' . trim((string) $config['basePath'], '/');
+    }
+
+    if (!empty($config['base_url'])) {
+        $urlPath = (string) parse_url((string) $config['base_url'], PHP_URL_PATH);
+        if ($urlPath !== '') {
+            return '/' . trim($urlPath, '/');
+        }
+    }
+
+    return '';
+}
+
+function renderServerErrorPage(array $config, \Throwable $e): void
+{
+    http_response_code(500);
+
+    $appName = $config['app_name'] ?? 'CRM Seguros';
+    $basePath = resolveBasePath($config);
+    $title = 'Error interno del servidor';
+    $message = 'Se produjo un error inesperado. Intentá nuevamente en unos minutos.';
+    $details = ini_get('display_errors') ? $e->getMessage() : '';
+    $viewFile = __DIR__ . '/../app/Views/errors/500.php';
+
+    if (file_exists($viewFile)) {
+        require $viewFile;
+        return;
+    }
+
+    echo '500 - Error interno del servidor';
+}
 
 try {
     $router = new \App\Core\Router();
@@ -54,5 +99,5 @@ try {
     $router->dispatch($_SERVER['REQUEST_METHOD'], $uri, $config);
 
 } catch (\Throwable $e) {
-    echo "Error fatal: " . $e->getMessage();
+    renderServerErrorPage($config, $e);
 }

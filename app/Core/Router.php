@@ -1,6 +1,8 @@
 <?php
 namespace App\Core;
 
+use RuntimeException;
+
 class Router
 {
     private array $routes = [];
@@ -10,26 +12,64 @@ class Router
         $this->routes[$method][$path] = $handler;
     }
 
-  public function dispatch(string $method, string $uri, array $config): void
-{
-    // Eliminamos parse_url de aquí porque ya la procesamos en index.php
-    $path = $uri; 
+    public function dispatch(string $method, string $uri, array $config): void
+    {
+        $path = $uri;
 
-    if (!isset($this->routes[$method][$path])) {
-        http_response_code(404);
-        echo "404 - Ruta no encontrada: [$method] $path";
-        return;
+        if (!isset($this->routes[$method][$path])) {
+            http_response_code(404);
+            $this->renderErrorPage(404, 'Ruta no encontrada', 'La URL solicitada no existe.', $config, $method, $path);
+            return;
+        }
+
+        [$controllerClass, $action] = $this->routes[$method][$path];
+
+        if (!class_exists($controllerClass)) {
+            throw new RuntimeException("La clase controlador '$controllerClass' no existe.");
+        }
+
+        $controller = new $controllerClass($config);
+        if (!method_exists($controller, $action)) {
+            throw new RuntimeException("La acción '$action' no existe en '$controllerClass'.");
+        }
+
+        $controller->$action();
     }
 
-    [$controllerClass, $action] = $this->routes[$method][$path];
-    
-    // Verificamos si la clase existe antes de instanciar
-    if (!class_exists($controllerClass)) {
-        die("Error: La clase controlador '$controllerClass' no existe. Revisa el autoloader y las mayúsculas.");
+    private function renderErrorPage(
+        int $statusCode,
+        string $title,
+        string $message,
+        array $config,
+        string $method,
+        string $path
+    ): void {
+        $appName = $config['app_name'] ?? 'CRM Seguros';
+        $basePath = $this->resolveBasePath($config);
+        $viewFile = __DIR__ . '/../Views/errors/404.php';
+
+        if (file_exists($viewFile)) {
+            require $viewFile;
+            return;
+        }
+
+        echo sprintf('%d - %s (%s %s)', $statusCode, $title, $method, $path);
     }
 
-    $controller = new $controllerClass($config);
-    $controller->$action();
-}
+    private function resolveBasePath(array $config): string
+    {
+        if (!empty($config['basePath'])) {
+            return '/' . trim((string) $config['basePath'], '/');
+        }
+
+        if (!empty($config['base_url'])) {
+            $urlPath = (string) parse_url((string) $config['base_url'], PHP_URL_PATH);
+            if ($urlPath !== '') {
+                return '/' . trim($urlPath, '/');
+            }
+        }
+
+        return '';
+    }
 
 }

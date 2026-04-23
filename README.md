@@ -37,3 +37,37 @@ Sistema CRM básico para brokers de seguros desarrollado en **PHP + MySQL + CSS*
 - `app/views`: vistas.
 - `public`: front controller y assets.
 
+## Healthcheck
+- Endpoint: `/healthcheck.php`
+- Respuesta HTTP:
+  - `200` cuando todo está bien.
+  - `503` cuando falla algún chequeo.
+- Verifica:
+  - Versión mínima de PHP.
+  - Archivos críticos del proyecto.
+  - Configuración DB obligatoria.
+  - Conexión a MySQL.
+  - Tablas base (`users`, `clients`, `insurers`, `policies`).
+- Formatos:
+  - JSON por defecto.
+  - HTML con `?format=html` (ejemplo: `/healthcheck.php?format=html`).
+
+## Mensajes de validación
+- Las acciones de alta/edición/baja muestran feedback visual global (`success`, `error`, `info`).
+- Se validan datos clave antes de escribir en base de datos (campos obligatorios, email, rangos y estados permitidos).
+
+## Manejo de errores
+- Página amigable `404` para rutas no existentes.
+- Página amigable `500` para errores internos de la aplicación.
+
+## Backup de base de datos
+1. Ejecutar:
+   ```bash
+   bash database/backup.sh
+   ```
+2. Opcional: indicar carpeta destino:
+   ```bash
+   bash database/backup.sh /ruta/de/backups
+   ```
+3. Variables opcionales para sobreescribir credenciales:
+   - `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER`, `DB_PASS`
