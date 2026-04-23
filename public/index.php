@@ -15,17 +15,43 @@ $config = require __DIR__ . '/../config/config.php';
 try {
     $router = new \App\Core\Router();
 
-   $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-$base = '/crmseguros/public';
+    $router->add('GET', '/', [\App\Controllers\DashboardController::class, 'index']);
 
-if (strpos($uri, $base) === 0) {
-    $uri = substr($uri, strlen($base));
-}
+    $router->add('GET', '/users', [\App\Controllers\UserController::class, 'index']);
+    $router->add('POST', '/users/store', [\App\Controllers\UserController::class, 'store']);
 
-// Aseguramos que la ruta sea limpia para el Router
-$uri = '/' . trim($uri, '/');
+    $router->add('GET', '/clients', [\App\Controllers\ClientController::class, 'index']);
+    $router->add('POST', '/clients/store', [\App\Controllers\ClientController::class, 'store']);
+    $router->add('POST', '/clients/update', [\App\Controllers\ClientController::class, 'update']);
+    $router->add('POST', '/clients/delete', [\App\Controllers\ClientController::class, 'delete']);
 
-$router->dispatch($_SERVER['REQUEST_METHOD'], $uri, $config);
+    $router->add('GET', '/insurers', [\App\Controllers\InsurerController::class, 'index']);
+    $router->add('POST', '/insurers/store', [\App\Controllers\InsurerController::class, 'store']);
+
+    $router->add('GET', '/policies', [\App\Controllers\PolicyController::class, 'index']);
+    $router->add('POST', '/policies/store', [\App\Controllers\PolicyController::class, 'store']);
+
+    $router->add('GET', '/renewals', [\App\Controllers\RenewalController::class, 'index']);
+
+    $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
+    $base = '';
+    if (!empty($config['basePath'])) {
+        $base = '/' . trim((string) $config['basePath'], '/');
+    } elseif (!empty($config['base_url'])) {
+        $base = '/' . trim((string) parse_url((string) $config['base_url'], PHP_URL_PATH), '/');
+    }
+
+    if ($base !== '' && strpos($uri, $base) === 0) {
+        $uri = substr($uri, strlen($base));
+    }
+
+    // Aseguramos que la ruta sea limpia para el Router
+    $uri = '/' . trim($uri, '/');
+    if ($uri === '//') {
+        $uri = '/';
+    }
+
+    $router->dispatch($_SERVER['REQUEST_METHOD'], $uri, $config);
 
 } catch (\Throwable $e) {
     echo "Error fatal: " . $e->getMessage();

@@ -1,7 +1,8 @@
 <?php
 return [
     'app_name' => 'CRM Seguros',
-    'base_url' => 'http://localhost:8000',
+    'basePath' => '/crmseguros/public',
+    'base_url' => 'http://localhost:8000/crmseguros/public',
     'db' => [
         'host' => '127.0.0.1',
         'port' => '3306',
